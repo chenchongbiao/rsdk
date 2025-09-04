@@ -52,7 +52,7 @@ function(
                         name: "Setup mdBook",
                         uses: "peaceiris/actions-mdbook@v2",
                         with: {
-                            "mdbook-version": "latest",
+                            "mdbook-version": "0.4.52",
                         },
                     },
                     {
