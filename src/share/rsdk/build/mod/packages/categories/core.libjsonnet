@@ -62,7 +62,7 @@ else
         ]
 ) +
 
-(if suite != "bullseye"
+(if suite != "bullseye" || suite != "jammy"
 then
         [
             "efibootmgr",
@@ -91,7 +91,25 @@ else
                 mkdir -p "$1/boot/efi"
                 mount -t tmpfs rsdk "$1/boot/efi"
             |||,
-(if std.extVar("sdboot") || product_firmware_type(product) == "edk2"
+(if std.extVar("sdboot") || product_firmware_type(product) == "edk2" && suite == "jammy"
+then
+            |||
+                set -e
+
+                mkdir -p "$1/boot/efi/EFI/BOOT"
+                mkdir -p "$1/boot/efi/EFI/systemd"
+                mkdir -p "$1/boot/efi/loader/entries"
+                cp "$1/usr/lib/systemd/boot/efi/systemd-bootaa64.efi" \
+                    "$1/boot/efi/EFI/systemd/systemd-bootaa64.efi"
+                cp "$1/usr/lib/systemd/boot/efi/systemd-bootaa64.efi" \
+                    "$1/boot/efi/EFI/BOOT/BOOTAA64.EFI"
+                mv "$1/usr/share/initramfs-tools/hooks/fixrtc" "$1/boot"
+                APT_CONFIG="$MMDEBSTRAP_APT_CONFIG" \
+                apt-get install -oDPkg::Chroot-Directory="$1" -y \
+                sdboot-is-embloader
+            |||
+),
+(if std.extVar("sdboot") || product_firmware_type(product) == "edk2" && suite != "jammy"
 then
             |||
                 set -e

@@ -140,6 +140,18 @@ function(suite, radxa_mirror, radxa_repo_suffix, product, temp_dir, install_vsco
         else
             []
         )
+        + (if suite == "jammy"
+            then
+                [
+                    |||
+                        APT_CONFIG="$MMDEBSTRAP_APT_CONFIG" \
+                        apt-get install -oDPkg::Chroot-Directory="$1" -y \
+                        gpg-agent gnupg
+                    |||,
+                ]
+            else
+                []
+        )
         + (if distro_check(suite) == "ubuntu"
             then
                 [
@@ -160,6 +172,17 @@ function(suite, radxa_mirror, radxa_repo_suffix, product, temp_dir, install_vsco
                 } for ppa in extra_ppa(product)
             ]
         else 
+            []
+        )
+        + (if suite == "jammy"
+        then
+            [
+                |||
+                    sed -i "s|^deb|deb [trusted=yes]|g" "$1"/etc/apt/sources.list.d/mozillateam-ubuntu-ppa*.list
+                    sed -i "s|^deb|deb [trusted=yes]|g" "$1"/etc/apt/sources.list.d/ubuntu-qcom-iot-ubuntu-qcom-ppa*.list
+                |||
+            ]
+        else
             []
         )
         + [
